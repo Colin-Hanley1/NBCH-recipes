@@ -1,0 +1,11 @@
+{
+  "name": "nbch-recipes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "a brat-styled recipe browser built from markdown files",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs && npx --yes serve dist"
+  }
+}

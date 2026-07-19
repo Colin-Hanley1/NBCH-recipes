@@ -1,0 +1,480 @@
+<title>recipes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* ---------- brat palette ---------- */
+  :root{
+    --slime:#8ace00;
+    --slime-dim:#7ab800;
+    --ink:#000;
+    --paper:#c8e97a;
+    --line:#000;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--slime);
+    color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    text-transform:lowercase;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:-.01em;
+    padding:18px 14px 60px;
+    max-width:640px;
+    margin:0 auto;
+    min-height:100vh;
+  }
+  button{ font-family:inherit; text-transform:lowercase; cursor:pointer; }
+
+  /* ---------- masthead ---------- */
+  .masthead{ text-align:center; margin:10px 0 22px; }
+  .masthead h1{
+    font-size:clamp(64px,22vw,120px);
+    line-height:.82;
+    margin:0;
+    font-weight:400;
+    letter-spacing:-.05em;
+    filter:blur(.6px);
+  }
+  .masthead p{
+    margin:6px 0 0;
+    font-size:14px;
+    letter-spacing:.02em;
+    opacity:.72;
+  }
+
+  /* ---------- panel of controls ---------- */
+  .controls{
+    border:2px solid var(--line);
+    background:transparent;
+    padding:16px 14px;
+    margin-bottom:18px;
+  }
+  .ctl{ margin-bottom:18px; }
+  .ctl:last-child{ margin-bottom:0; }
+  .lbl{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-bottom:9px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  .lbl b{ font-weight:700; }
+  .lbl .val{ letter-spacing:0; text-transform:lowercase; font-size:13px; }
+
+  /* segmented toggle (meal) */
+  .seg{ display:flex; gap:0; border:2px solid var(--line); }
+  .seg button{
+    flex:1;
+    background:transparent;
+    border:0;
+    border-right:2px solid var(--line);
+    padding:13px 6px;
+    font-size:15px;
+    color:var(--ink);
+    transition:background .08s;
+  }
+  .seg button:last-child{ border-right:0; }
+  .seg button[aria-pressed="true"]{ background:var(--ink); color:var(--slime); }
+
+  /* slider */
+  input[type=range]{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:2px; background:var(--ink); margin:14px 0 4px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:26px; height:26px; background:var(--ink); border-radius:50%;
+    cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:26px; height:26px; background:var(--ink); border:0; border-radius:50%; cursor:pointer;
+  }
+  .rangefoot{ display:flex; justify-content:space-between; font-size:11px; opacity:.6; }
+
+  /* ingredient pantry */
+  .pantry-in{ display:flex; gap:8px; }
+  .pantry-in input{
+    flex:1; font-family:inherit; text-transform:lowercase;
+    border:2px solid var(--line); background:transparent; color:var(--ink);
+    padding:11px 12px; font-size:15px; min-width:0;
+  }
+  .pantry-in input::placeholder{ color:#0009; }
+  .pantry-in button{
+    border:2px solid var(--line); background:var(--ink); color:var(--slime);
+    padding:0 16px; font-size:20px; line-height:1;
+  }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-top:11px; }
+  .chip{
+    border:2px solid var(--line); background:var(--ink); color:var(--slime);
+    padding:6px 9px 6px 11px; font-size:13px; display:flex; align-items:center; gap:7px;
+  }
+  .chip button{ background:none; border:0; color:var(--slime); font-size:15px; padding:0; line-height:1; }
+  .pantry-note{ font-size:11px; opacity:.6; margin-top:9px; }
+  .toggle-row{ display:flex; align-items:center; gap:9px; margin-top:11px; font-size:13px; }
+  .toggle-row input{ width:18px; height:18px; accent-color:#000; }
+
+  /* ---------- action buttons ---------- */
+  .actions{ display:flex; gap:10px; margin-bottom:14px; }
+  .actions button{
+    flex:1; border:2px solid var(--line); padding:15px 6px; font-size:16px; font-weight:700;
+    letter-spacing:.02em; background:transparent; color:var(--ink);
+  }
+  .actions .primary{ background:var(--ink); color:var(--slime); }
+  .actions button:active{ transform:translateY(1px); }
+
+  .count{ font-size:12px; letter-spacing:.1em; text-transform:uppercase; margin:0 2px 12px; opacity:.7; }
+
+  /* ---------- recipe cards ---------- */
+  .card{
+    border:2px solid var(--line); margin-bottom:12px; padding:14px;
+    animation:pop .18s ease both;
+  }
+  @keyframes pop{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:none;} }
+  .card.spun{ background:var(--ink); color:var(--slime); }
+  .card.spun .meta span, .card.spun .missing{ border-color:var(--slime); }
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; cursor:pointer; }
+  .card-top h3{ margin:0; font-size:21px; font-weight:400; letter-spacing:-.02em; }
+  .card .meta{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .card .meta span{ border:1.5px solid var(--line); padding:3px 7px; font-size:11px; letter-spacing:.04em; }
+  .missing{ font-size:12px; margin-top:9px; border-top:1.5px dashed var(--line); padding-top:8px; }
+  .missing b{ font-weight:700; }
+  .body{ display:none; margin-top:12px; padding-top:12px; border-top:1.5px solid currentColor; font-size:14px; line-height:1.5; }
+  .card.open .body{ display:block; }
+  .body h4{ margin:0 0 5px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+  .body ul{ margin:0 0 12px; padding-left:18px; }
+  .body li{ margin-bottom:3px; }
+  .body .steps{ white-space:pre-wrap; }
+
+  .empty{ text-align:center; padding:40px 20px; border:2px dashed var(--line); opacity:.7; font-size:15px; }
+</style>
+
+<div class="masthead">
+  <h1>recipes</h1>
+</div>
+
+<div class="controls">
+  <div class="ctl">
+    <div class="lbl"><b>meal</b></div>
+    <div class="seg" id="seg">
+      <button data-meal="all" aria-pressed="true">all</button>
+      <button data-meal="lunch" aria-pressed="false">lunch</button>
+      <button data-meal="dinner" aria-pressed="false">dinner</button>
+    </div>
+  </div>
+
+  <div class="ctl">
+    <div class="lbl"><b>max time</b><span class="val" id="timeVal">any</span></div>
+    <input type="range" id="time" min="10" max="120" step="5" value="120">
+    <div class="rangefoot"><span>10 min</span><span>2 hr+</span></div>
+  </div>
+
+  <div class="ctl">
+    <div class="lbl"><b>what i have</b></div>
+    <div class="pantry-in">
+      <input id="ingIn" placeholder="add an ingredient…" autocomplete="off">
+      <button id="ingAdd">+</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <label class="toggle-row">
+      <input type="checkbox" id="onlyMakeable">
+      only show ones i can make now
+    </label>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="primary" id="spin">spin the wheel</button>
+  <button id="clear">reset</button>
+</div>
+
+<div class="count" id="count"></div>
+<div id="list"></div>
+
+<script>
+/* ---------------- data ---------------- */
+let recipes = [];
+
+async function boot(){
+  try{
+    const res = await fetch("recipes.json", { cache:"no-cache" });
+    if(!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    recipes = Array.isArray(data) ? data : [];
+  }catch(e){
+    recipes = [];
+  }
+  recipes.forEach(prepRecipe);
+  renderChips(); render();
+}
+
+function norm(s){ return String(s).trim().toLowerCase(); }
+
+/* ---------------- filter state ---------------- */
+const state = { meal:"all", maxTime:120, pantry:[], onlyMakeable:false, spun:null };
+
+/* ---------------- controls wiring ---------------- */
+const $ = s => document.querySelector(s);
+
+$("#seg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  state.meal = b.dataset.meal; state.spun = null;
+  [...$("#seg").children].forEach(x=> x.setAttribute("aria-pressed", x===b));
+  render();
+});
+
+const timeEl = $("#time");
+timeEl.addEventListener("input", ()=>{
+  state.maxTime = +timeEl.value; state.spun = null;
+  $("#timeVal").textContent = state.maxTime>=120 ? "any" : "≤ "+state.maxTime+" min";
+  render();
+});
+
+function addIng(v){
+  v = norm(v); if(!v) return;
+  if(!state.pantry.includes(v)) state.pantry.push(v);
+  $("#ingIn").value = ""; state.spun=null; renderChips(); render();
+}
+$("#ingAdd").addEventListener("click", ()=> addIng($("#ingIn").value));
+$("#ingIn").addEventListener("keydown", e=>{
+  if(e.key==="Enter"){ e.preventDefault(); addIng($("#ingIn").value); }
+  if(e.key===","){ e.preventDefault(); addIng($("#ingIn").value.replace(/,/g,"")); }
+});
+$("#onlyMakeable").addEventListener("change", e=>{ state.onlyMakeable = e.target.checked; state.spun=null; render(); });
+
+function renderChips(){
+  $("#chips").innerHTML = state.pantry.map((p,i)=>
+    `<span class="chip">${esc(p)}<button data-i="${i}" aria-label="remove">×</button></span>`).join("");
+}
+$("#chips").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  state.pantry.splice(+b.dataset.i,1); state.spun=null; renderChips(); render();
+});
+
+$("#clear").addEventListener("click", ()=>{
+  state.meal="all"; state.maxTime=120; state.pantry=[]; state.onlyMakeable=false; state.spun=null;
+  timeEl.value=120; $("#timeVal").textContent="any"; $("#onlyMakeable").checked=false;
+  [...$("#seg").children].forEach(x=> x.setAttribute("aria-pressed", x.dataset.meal==="all"));
+  renderChips(); render();
+});
+
+$("#spin").addEventListener("click", ()=>{
+  const pool = filtered();
+  if(!pool.length){ state.spun=null; render(); return; }
+  state.spun = pool[Math.floor(Math.random()*pool.length)].id;
+  render();
+  const el = document.querySelector(".card.spun");
+  if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
+});
+
+/* ================= ingredient matching engine =================
+   Recipe ingredient strings are written like real recipes
+   ("1/2 cup canned cannellini beans, drained"). We can't match those
+   with substrings. Instead every ingredient — and every pantry entry —
+   is reduced to a small set of canonical tokens, then matched by
+   token-subset. Edit STAPLES / ALIASES below to taste; it's all here. */
+
+// things you're assumed to always have — never counted as "missing".
+const STAPLES = new Set([
+  "salt","pepper","black pepper","water","oil","olive oil","butter",
+  "sugar","flour","garlic powder","onion powder",
+]);
+
+// synonyms → canonical form. left side is what might appear; right is the
+// name everything collapses to. keys are already normalized (singular, lower).
+const ALIASES = {
+  "evoo":"olive oil", "extra virgin olive oil":"olive oil",
+  "green onion":"scallion", "spring onion":"scallion",
+  "garbanzo":"chickpea", "garbanzo bean":"chickpea",
+  "coriander":"cilantro", "aubergine":"eggplant",
+  "prawn":"shrimp", "chile":"chili", "chilli":"chili",
+  "bell pepper":"bell pepper", "capsicum":"bell pepper",
+  "passata":"tomato", "stock":"broth",
+};
+
+// measurement units + containers — dropped entirely.
+const UNITS = new Set(("cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons "+
+  "oz ounce ounces lb lbs pound pounds g gram grams kg ml l liter liters litre "+
+  "can cans jar jars package packages pkg box stick sticks clove cloves slice slices "+
+  "pinch pinches dash dashes handful handfuls bunch bunches sprig sprigs head heads "+
+  "piece pieces quart pint gallon knob splash drizzle strip strips fillet fillets").split(" "));
+
+// prep words / descriptors / filler — dropped (colors are kept, they matter).
+const STOP = new Set(("of to for and a an the or with into as some about "+
+  "fresh dried ground chopped minced diced sliced grated shredded crushed "+
+  "canned drained rinsed cooked raw roasted toasted packed halved quartered "+
+  "large small medium ripe boneless skinless extra virgin whole softened melted "+
+  "warm cold hot room temperature taste optional divided plus more garnish "+
+  "finely roughly thinly lightly baby low fat reduced free").split(" "));
+
+function singular(w){
+  if(w.length <= 3) return w;
+  if(w.endsWith("ies")) return w.slice(0,-3)+"y";
+  if(/(ses|shes|ches|xes)$/.test(w)) return w.slice(0,-2);
+  if(w.endsWith("oes")) return w.slice(0,-2);
+  if(w.endsWith("s") && !w.endsWith("ss")) return w.slice(0,-1);
+  return w;
+}
+
+// one phrase (no " or ") -> canonical token Set, e.g.
+// "1/2 cup canned cannellini beans, drained" -> {cannellini, bean}
+function tokensOf(phrase){
+  let s = String(phrase).toLowerCase()
+    .replace(/\([^)]*\)/g," ")            // (optional), (about 2)
+    .replace(/\d+\s*\/\s*\d+/g," ")        // fractions 1/2
+    .replace(/[¼½¾⅓⅔⅛⅜⅝⅞]/g," ")           // unicode fractions
+    .replace(/\d+([.,]\d+)?/g," ")         // numbers / decimals
+    .replace(/[^a-z\s-]/g," ");            // punctuation
+  let words = s.split(/[\s-]+/).filter(Boolean)
+    .map(singular)
+    .filter(w=> w && !UNITS.has(w) && !STOP.has(w));
+  let joined = words.join(" ");
+  // apply aliases (longest phrase first so "green onion" beats "onion")
+  for(const k of Object.keys(ALIASES).sort((a,b)=>b.length-a.length)){
+    if(joined === k || joined.includes(k)) joined = joined.split(k).join(ALIASES[k]);
+  }
+  return new Set(joined.split(" ").filter(Boolean));
+}
+
+// full ingredient line -> {label, alts:[Set,...], staple}
+// "1 cup baby spinach or arugula" -> alts: [{spinach},{arugula}]
+function analyzeIngredient(line){
+  const alts = String(line).split(/\s+or\s+/i).map(tokensOf).filter(t=> t.size);
+  const label = alts.length ? [...alts[0]].join(" ") : "";
+  const staple = alts.some(a => STAPLES.has([...a].join(" ")));
+  return { label, alts, staple };
+}
+
+// precompute matching data once per recipe on load.
+function prepRecipe(r){
+  r._ing = (r.ingredients || []).map(analyzeIngredient);
+}
+
+// a is subset of b (a fully covered by b)
+function subset(a, b){
+  if(!a.size || a.size > b.size) return false;
+  for(const x of a){ if(!b.has(x)) return false; }
+  return true;
+}
+
+// current pantry as token Sets (same normalizer as ingredients).
+function pantryTokens(){
+  return state.pantry.map(tokensOf).filter(t=> t.size);
+}
+
+// does pantry entry `p` (a token Set) satisfy this ingredient alternative?
+function altMatches(alt, p){ return subset(p, alt) || subset(alt, p); }
+
+// is this analyzed ingredient satisfied by the pantry?
+function ingCovered(ing, pantry){
+  if(!ing.alts.length) return true;   // nothing parseable -> don't nag
+  if(ing.staple) return true;
+  return ing.alts.some(alt => pantry.some(p => altMatches(alt, p)));
+}
+
+// how many of my "have" ingredients does this recipe actually use?
+// (staples don't count — everyone has those, they shouldn't inflate overlap.)
+function usesCount(r, pantry){
+  let n = 0;
+  for(const p of pantry){
+    if((r._ing || []).some(ing => !ing.staple && ing.alts.some(alt => altMatches(alt, p)))) n++;
+  }
+  return n;
+}
+
+/* ---------------- filtering logic ---------------- */
+// returns clean labels of ingredients you're missing (deduped).
+function missingFor(r){
+  if(!state.pantry.length) return [];
+  const pantry = pantryTokens();
+  if(!pantry.length) return [];
+  const out = [];
+  for(const ing of (r._ing || [])){
+    if(!ingCovered(ing, pantry) && ing.label && !out.includes(ing.label)){
+      out.push(ing.label);
+    }
+  }
+  return out;
+}
+function filtered(){
+  // staple entries (e.g. you typed "salt") don't act as a filter — everyone has those.
+  const pantry = pantryTokens().filter(p=> !STAPLES.has([...p].join(" ")));
+  const hasPantry = pantry.length > 0;
+  return recipes.filter(r=>{
+    if(state.meal!=="all" && r.meal!==state.meal) return false;
+    if(state.maxTime<120 && r.time>state.maxTime) return false;
+    // "what i have" is a positive filter: hide recipes that use none of my ingredients.
+    if(hasPantry && usesCount(r, pantry) === 0) return false;
+    if(state.onlyMakeable && missingFor(r).length) return false;
+    return true;
+  }).sort((a,b)=>{
+    // with a pantry set, rank by how many of my ingredients each uses (desc),
+    // then by fewest still-missing, then quickest. otherwise just quickest.
+    if(hasPantry){
+      const u = usesCount(b, pantry) - usesCount(a, pantry);
+      if(u) return u;
+      const m = missingFor(a).length - missingFor(b).length;
+      if(m) return m;
+    }
+    return a.time - b.time;
+  });
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  if(!recipes.length){
+    $("#count").textContent = "";
+    $("#list").innerHTML = `<div class="empty">no recipes yet.<br>add a .md file in <b>recipes/</b> and redeploy.</div>`;
+    return;
+  }
+  const list = filtered();
+  let show = list;
+  if(state.spun) show = list.filter(r=> r.id===state.spun);
+
+  const hasPantry = pantryTokens().some(p=> !STAPLES.has([...p].join(" ")));
+  $("#count").textContent = state.spun
+    ? "your pick — 1 of "+list.length+" matches"
+    : list.length+" recipe"+(list.length===1?"":"s")+(hasPantry?" use what you have":" match");
+
+  if(!show.length){
+    $("#list").innerHTML = `<div class="empty">nothing matches.<br>loosen a filter.</div>`;
+    return;
+  }
+  $("#list").innerHTML = show.map(r=>{
+    const miss = missingFor(r);
+    const total = (r._ing || []).filter(i=> i.alts.length).length;
+    const missHtml = (state.pantry.length && miss.length)
+      ? `<div class="missing">have <b>${total-miss.length}/${total}</b> — need: ${miss.map(esc).join(", ")}</div>`
+      : (state.pantry.length ? `<div class="missing">✓ you have everything</div>` : "");
+    return `<div class="card ${r.id===state.spun?'spun':''}" data-id="${esc(r.id)}">
+      <div class="card-top" data-act="toggle">
+        <h3>${esc(r.name)}</h3>
+      </div>
+      <div class="meta">
+        <span>${esc(r.meal)}</span><span>${esc(r.time)} min</span><span>${(r.ingredients||[]).length} ingredients</span>
+      </div>
+      ${missHtml}
+      <div class="body">
+        <h4>ingredients</h4>
+        <ul>${(r.ingredients||[]).map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
+        <h4>steps</h4>
+        <div class="steps">${esc(r.steps||"—")}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+$("#list").addEventListener("click", e=>{
+  const card = e.target.closest(".card"); if(!card) return;
+  card.classList.toggle("open");
+});
+
+/* ---------------- utils ---------------- */
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------------- go ---------------- */
+boot();
+</script>
