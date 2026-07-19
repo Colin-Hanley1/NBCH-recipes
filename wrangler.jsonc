@@ -1,0 +1,11 @@
+{
+  // Cloudflare Workers static-assets config.
+  // Only ./dist is uploaded — that's what `node build.mjs` produces.
+  // This keeps node_modules/ (installed in CI) out of the deploy, which is
+  // what caused the "Asset too large" (workerd 122 MiB) failure.
+  "name": "nbch-recipes",
+  "compatibility_date": "2026-07-19",
+  "assets": {
+    "directory": "./dist"
+  }
+}

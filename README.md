@@ -59,13 +59,18 @@ npm run build    # writes dist/index.html + dist/recipes.json
 
 ## Deploy to Cloudflare Pages
 
+This repo deploys as a **Cloudflare Worker with static assets** (git-connected).
+
 1. Push this repo to GitHub.
-2. In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git**,
+2. In the Cloudflare dashboard: **Workers & Pages → Create → Import a repository**,
    pick this repo.
-3. Set the build config:
-   - **Framework preset:** None
-   - **Build command:** `node build.mjs`
-   - **Build output directory:** `dist`
+3. Build settings:
+   - **Build command:** `npm run build`
+   - **Deploy command:** `npx wrangler deploy`
 4. Save & deploy. Every push to the connected branch rebuilds automatically.
+
+`wrangler.jsonc` does the important part: it points the deploy at **`./dist`**
+(the build output) so only the two built files ship — not `node_modules/`, which
+CI installs and would otherwise blow past the 25 MiB asset limit.
 
 No environment variables, no secrets, no server. Just static files.
