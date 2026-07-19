@@ -1,8 +1,8 @@
 ---
 name: lemon-herb roasted salmon and quinoa bowls
 meal: lunch
-time: 8
-tags: [pescatarian,no-cook]
+time: 30
+tags: [pescatarian]
 ---
 
 ## ingredients
